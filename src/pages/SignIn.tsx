@@ -25,17 +25,25 @@ export default function SignIn() {
     setLoading(true);
 
     try {
+      console.log('Attempting sign in with:', email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      console.log('Sign in response:', { data, error });
+
+      if (error) {
+        console.error('Sign in error:', error);
+        throw error;
+      }
 
       if (data.user) {
+        console.log('Sign in successful, navigating to dashboard');
         navigate('/');
       }
     } catch (err: any) {
+      console.error('Sign in catch error:', err);
       setError(err.message || 'Failed to sign in');
     } finally {
       setLoading(false);
