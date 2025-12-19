@@ -38,7 +38,6 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      console.log('Attempting signup with:', email);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -47,17 +46,12 @@ export default function SignUp() {
         }
       });
 
-      console.log('Signup response:', { data, error });
-
       if (error) throw error;
 
       if (data.user) {
-        console.log('User created:', data.user.id);
-        // user_settings will be created automatically by database trigger
-        setSuccess('Account created! You can now sign in.');
+        setSuccess('Account created successfully! You can now sign in.');
       }
     } catch (err: any) {
-      console.error('Signup error:', err);
       setError(err.message || 'Failed to sign up');
     } finally {
       setLoading(false);
