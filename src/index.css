@@ -42,11 +42,6 @@ html {
   -ms-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
 
 @media (prefers-color-scheme: light) {
   :root {
