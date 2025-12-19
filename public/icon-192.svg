@@ -1,0 +1,9 @@
+<svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="48" fill="#2E7D32"/>
+  <circle cx="96" cy="70" r="35" fill="none" stroke="#FFD700" stroke-width="6"/>
+  <text x="96" y="80" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#FFD700" text-anchor="middle">KSh</text>
+  <path d="M 60 110 L 132 110 L 132 140 Q 132 145 127 145 L 65 145 Q 60 145 60 140 Z" fill="#FFD700"/>
+  <rect x="70" y="115" width="52" height="3" fill="#2E7D32"/>
+  <rect x="70" y="125" width="42" height="3" fill="#2E7D32"/>
+  <rect x="70" y="135" width="35" height="3" fill="#2E7D32"/>
+</svg>

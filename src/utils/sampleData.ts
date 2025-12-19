@@ -1,0 +1,83 @@
+import type { Transaction, Account } from '../types';
+
+// Sample data for demo purposes
+export const sampleAccounts: Account[] = [
+  {
+    id: '1',
+    name: 'KCB Bank',
+    type: 'bank',
+    balance: 45000,
+    currency: 'KES',
+    color: '#1976d2',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: '2',
+    name: 'Cash Wallet',
+    type: 'cash',
+    balance: 5000,
+    currency: 'KES',
+    color: '#4caf50',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
+export const sampleTransactions: Transaction[] = [
+  {
+    id: '1',
+    type: 'expense',
+    amount: 500,
+    category: 'Food & Dining',
+    description: 'Lunch at Java House',
+    date: new Date(2025, 11, 18),
+    accountId: '2',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: '2',
+    type: 'expense',
+    amount: 200,
+    category: 'Transportation',
+    description: 'Uber to work',
+    date: new Date(2025, 11, 18),
+    accountId: '2',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: '3',
+    type: 'income',
+    amount: 50000,
+    category: 'Salary',
+    description: 'Monthly salary',
+    date: new Date(2025, 11, 15),
+    accountId: '1',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: '4',
+    type: 'expense',
+    amount: 1500,
+    category: 'Shopping',
+    description: 'Groceries at Naivas',
+    date: new Date(2025, 11, 17),
+    accountId: '1',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: '5',
+    type: 'expense',
+    amount: 800,
+    category: 'Entertainment',
+    description: 'Movie tickets',
+    date: new Date(2025, 11, 16),
+    accountId: '2',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
