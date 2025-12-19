@@ -39,14 +39,21 @@ export default function SignUp() {
     setLoading(true);
 
     try {
+      console.log('Attempting signup with:', email);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: window.location.origin,
+        }
       });
+
+      console.log('Signup response:', { data, error });
 
       if (error) throw error;
 
       if (data.user) {
+        console.log('User created:', data.user.id);
         // Create default user settings
         const { error: settingsError } = await supabase
           .from('user_settings')
@@ -56,12 +63,16 @@ export default function SignUp() {
             notifications_enabled: true,
           });
 
-        if (settingsError) console.error('Settings error:', settingsError);
+        if (settingsError) {
+          console.error('Settings error:', settingsError);
+        } else {
+          console.log('User settings created successfully');
+        }
 
-        setSuccess('Account created! Redirecting...');
-        setTimeout(() => navigate('/'), 2000);
+        setSuccess('Account created! Check your email for confirmation, then sign in.');
       }
     } catch (err: any) {
+      console.error('Signup error:', err);
       setError(err.message || 'Failed to sign up');
     } finally {
       setLoading(false);
