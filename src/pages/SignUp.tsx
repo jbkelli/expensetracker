@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -13,7 +13,6 @@ import { AccountBalanceWallet } from '@mui/icons-material';
 import { supabase } from '../services/supabase';
 
 export default function SignUp() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -54,22 +53,8 @@ export default function SignUp() {
 
       if (data.user) {
         console.log('User created:', data.user.id);
-        // Create default user settings
-        const { error: settingsError } = await supabase
-          .from('user_settings')
-          .insert({
-            user_id: data.user.id,
-            dark_mode: false,
-            notifications_enabled: true,
-          });
-
-        if (settingsError) {
-          console.error('Settings error:', settingsError);
-        } else {
-          console.log('User settings created successfully');
-        }
-
-        setSuccess('Account created! Check your email for confirmation, then sign in.');
+        // user_settings will be created automatically by database trigger
+        setSuccess('Account created! You can now sign in.');
       }
     } catch (err: any) {
       console.error('Signup error:', err);
