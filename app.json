@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "CashKelli",
+    "slug": "cashkelli",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a1a"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cashkelli.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./icon.png",
+        "backgroundColor": "#1a1a1a"
+      },
+      "permissions": [
+        "android.permission.READ_SMS",
+        "android.permission.RECEIVE_SMS"
+      ],
+      "package": "com.cashkelli.app"
+    },
+    "web": {
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}
