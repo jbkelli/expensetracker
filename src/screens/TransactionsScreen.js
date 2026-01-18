@@ -9,8 +9,9 @@ import {
   Modal,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors, spacing, borderRadius, fontSize } from '../theme';
-import { getCategories, getTransactions, getTransactionsByDateRange } from '../database';
+import { getCategories, getTransactions, getTransactionsByDateRange, deleteTransaction } from '../database';
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { generatePDFReport } from '../pdfService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,9 +25,11 @@ export default function TransactionsScreen() {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   const loadData = async () => {
     try {
@@ -110,6 +113,30 @@ export default function TransactionsScreen() {
     }
   };
 
+  const handleDeleteTransaction = (transactionId) => {
+    Alert.alert(
+      'Delete Transaction',
+      'Are you sure you want to delete this transaction?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteTransaction(transactionId);
+              await loadData();
+              Alert.alert('Success', 'Transaction deleted');
+            } catch (error) {
+              console.error('Error deleting transaction:', error);
+              Alert.alert('Error', 'Failed to delete transaction');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const showExportOptions = () => {
     Alert.alert(
       'Export Report',
@@ -176,7 +203,11 @@ export default function TransactionsScreen() {
           </View>
         ) : (
           filteredTransactions.map((transaction) => (
-            <View key={transaction.id} style={styles.transactionItem}>
+            <TouchableOpacity
+              key={transaction.id}
+              style={styles.transactionItem}
+              onLongPress={() => handleDeleteTransaction(transaction.id)}
+            >
               <View style={styles.transactionIcon}>
                 <Text style={styles.categoryIcon}>{transaction.category_icon || '📦'}</Text>
               </View>
@@ -198,7 +229,7 @@ export default function TransactionsScreen() {
                 {transaction.type === 'income' ? '+' : '-'}
                 {transaction.amount.toLocaleString('en-KE', { minimumFractionDigits: 2 })}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>

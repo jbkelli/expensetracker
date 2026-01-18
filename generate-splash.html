@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CashKelli Splash Screen Generator</title>
+</head>
+<body>
+  <canvas id="splash" width="1284" height="2778"></canvas>
+  <script>
+    const canvas = document.getElementById('splash');
+    const ctx = canvas.getContext('2d');
+    
+    // Background
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // App Name
+    ctx.fillStyle = '#6200EE';
+    ctx.font = 'bold 120px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('CashKelli', canvas.width / 2, canvas.height / 2 - 50);
+    
+    // Tagline
+    ctx.fillStyle = '#B0B0B0';
+    ctx.font = '48px Arial';
+    ctx.fillText('Your digital cash planner', canvas.width / 2, canvas.height / 2 + 80);
+    
+    // Icon (money emoji)
+    ctx.font = '180px Arial';
+    ctx.fillText('💰', canvas.width / 2, canvas.height / 2 - 200);
+    
+    // Download link
+    const link = document.createElement('a');
+    link.download = 'splash.png';
+    link.href = canvas.toDataURL();
+    link.textContent = 'Click to download splash.png';
+    link.style.fontSize = '20px';
+    link.style.display = 'block';
+    link.style.marginTop = '20px';
+    link.style.textAlign = 'center';
+    document.body.appendChild(link);
+  </script>
+</body>
+</html>

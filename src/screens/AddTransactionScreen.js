@@ -78,9 +78,9 @@ export default function AddTransactionScreen({ route, navigation }) {
       
       await updateUserBalance(userId, newBalance);
 
-      Alert.alert('Success', 'Transaction added successfully!', [
-        { text: 'OK', onPress: () => navigation.goBack() }
-      ]);
+      // Navigate back and trigger reload
+      navigation.navigate('Home', { refresh: Date.now() });
+      Alert.alert('Success', 'Transaction added successfully!');
     } catch (error) {
       console.error('Error adding transaction:', error);
       Alert.alert('Error', 'Failed to add transaction');

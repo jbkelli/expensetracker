@@ -139,7 +139,7 @@ export const processSMSMessages = async (userId, messages) => {
     try {
       // Check if already processed
       const messageId = `${msg.address}_${msg.date}`;
-      const isProcessed = await isSMSProcessed(messageId);
+      const isProcessed = await isSMSProcessed(userId, messageId);
       
       if (isProcessed) {
         continue;
@@ -164,8 +164,17 @@ export const processSMSMessages = async (userId, messages) => {
           categoryId = categorizeTransaction(parsed.description, categories);
         }
 
-        if (!categoryId && parsed.type === 'expense') {
-          needsCategorization = true;
+        // If still no category, assign to "Other" category
+        if (!categoryId) {
+          const otherCategory = categories.find(c => 
+            c.name === (parsed.type === 'income' ? 'Other Income' : 'Other Expenses')
+          );
+          if (otherCategory) {
+            categoryId = otherCategory.id;
+          } else {
+            // If "Other" category doesn't exist, flag for categorization
+            needsCategorization = true;
+          }
         }
 
         // Create transaction
@@ -182,7 +191,7 @@ export const processSMSMessages = async (userId, messages) => {
         );
 
         // Mark SMS as processed
-        await markSMSProcessed(messageId, msg.address, msg.body);
+        await markSMSProcessed(userId, messageId, msg.address, msg.body);
 
         processedTransactions.push({
           id: transactionId,

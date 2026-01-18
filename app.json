@@ -7,6 +7,7 @@
     "icon": "./icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#1a1a1a"
     },
@@ -15,23 +16,37 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.cashkelli.app"
+      "bundleIdentifier": "com.cashkelli"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./icon.png",
+        "monochromeImage": "./icon.png",
         "backgroundColor": "#1a1a1a"
       },
       "permissions": [
         "android.permission.READ_SMS",
-        "android.permission.RECEIVE_SMS"
+        "android.permission.RECEIVE_SMS",
+        "android.permission.POST_NOTIFICATIONS"
       ],
-      "package": "com.cashkelli.app"
+      "package": "com.cashkelli",
+      "versionCode": 2
     },
-    "web": {
-    },
+    "web": {},
     "plugins": [
-      "expo-asset"
-    ]
+      "expo-asset",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#6200EE"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ab87864d-26ce-4df1-adf2-319e193f555e"
+      }
+    }
   }
 }

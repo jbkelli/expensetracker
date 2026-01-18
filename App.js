@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
-import { colors } from './src/theme';
+import { ThemeProvider, useTheme } from './src/theme';
 import { initDatabase } from './src/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -15,31 +16,32 @@ import TransactionsScreen from './src/screens/TransactionsScreen';
 import AddTransactionScreen from './src/screens/AddTransactionScreen';
 import BudgetsScreen from './src/screens/BudgetsScreen';
 import SMSScreen from './src/screens/SMSScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function TabNavigator() {
+function TabNavigator({ theme }) {
   return (
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
+          backgroundColor: theme.surface,
+          borderTopColor: theme.border,
           paddingBottom: 8,
           paddingTop: 8,
           height: 60,
         },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textSecondary,
         headerStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: theme.surface,
           elevation: 0,
           shadowOpacity: 0,
           borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          borderBottomColor: theme.border,
         },
-        headerTintColor: colors.text,
+        headerTintColor: theme.text,
         headerTitleStyle: {
           fontWeight: 'bold',
         },
@@ -80,6 +82,15 @@ function TabNavigator() {
 }
 
 export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
+
+function AppContent() {
+  const { theme, isDarkMode } = useTheme();
   const [isReady, setIsReady] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -94,6 +105,8 @@ export default function App() {
         setIsLoggedIn(!!userId);
       } catch (error) {
         console.error('Error initializing app:', error);
+        // Even if there's an error, we should still show the app
+        // The error will be handled by individual screens
       } finally {
         setIsReady(true);
       }
@@ -109,31 +122,31 @@ export default function App() {
   return (
     <NavigationContainer
       theme={{
-        dark: true,
+        dark: isDarkMode,
         colors: {
-          primary: colors.primary,
-          background: colors.background,
-          card: colors.surface,
-          text: colors.text,
-          border: colors.border,
-          notification: colors.accent,
+          primary: theme.primary,
+          background: theme.background,
+          card: theme.surface,
+          text: theme.text,
+          border: theme.border,
+          notification: theme.accent,
         },
       }}
     >
-      <StatusBar style="light" />
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
       <Stack.Navigator
         screenOptions={{
           headerStyle: {
-            backgroundColor: colors.surface,
+            backgroundColor: theme.surface,
             elevation: 0,
             shadowOpacity: 0,
           },
-          headerTintColor: colors.text,
+          headerTintColor: theme.text,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
           cardStyle: {
-            backgroundColor: colors.background,
+            backgroundColor: theme.background,
           },
         }}
       >
@@ -153,17 +166,21 @@ export default function App() {
         ) : null}
         <Stack.Screen
           name="Main"
-          component={TabNavigator}
           options={{ headerShown: false }}
-        />
+        >
+          {() => <TabNavigator theme={theme} />}
+        </Stack.Screen>
         <Stack.Screen
           name="AddTransaction"
           component={AddTransactionScreen}
           options={{ title: 'Add Transaction' }}
         />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{ title: 'Profile' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-
-const { Text } = require('react-native');

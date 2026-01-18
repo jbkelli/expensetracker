@@ -6,12 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  PermissionsAndroid,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors, spacing, borderRadius, fontSize } from '../theme';
-import { getUncategorizedTransactions, updateTransactionCategory, getCategories } from '../database';
+import { getUncategorizedTransactions, updateTransactionCategory, getCategories, getUserByEmail, updateUserBalance } from '../database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { requestSMSPermission, checkSMSPermission, readSMSMessages } from '../smsReader';
+import { processSMSMessages } from '../smsService';
 
 export default function SMSScreen({ navigation }) {
   const [uncategorizedTransactions, setUncategorizedTransactions] = useState([]);
@@ -20,26 +23,20 @@ export default function SMSScreen({ navigation }) {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [smsPermission, setSmsPermission] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(null);
+  const [syncing, setSyncing] = useState(false);
 
-  useEffect(() => {
-    loadData();
-    checkPermissions();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+      checkPermissions();
+    }, [])
+  );
 
   const checkPermissions = async () => {
     if (Platform.OS === 'android') {
       try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_SMS,
-          {
-            title: 'SMS Permission',
-            message: 'This app needs access to your SMS to automatically track expenses from bank messages',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
-        );
-        setSmsPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
+        const granted = await checkSMSPermission();
+        setSmsPermission(granted);
       } catch (err) {
         console.warn(err);
       }
@@ -66,21 +63,84 @@ export default function SMSScreen({ navigation }) {
 
   const syncSMS = async () => {
     if (!smsPermission) {
-      Alert.alert('Permission Required', 'Please grant SMS permission to sync messages');
-      checkPermissions();
+      Alert.alert(
+        'Permission Required',
+        'CashKelli needs SMS permission to automatically track transactions from M-Pesa and bank messages.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Grant Permission',
+            onPress: async () => {
+              const granted = await requestSMSPermission();
+              setSmsPermission(granted);
+              if (granted) {
+                syncSMS();
+              }
+            },
+          },
+        ]
+      );
       return;
     }
 
+    setSyncing(true);
+
     try {
-      Alert.alert('Info', 'SMS reading is currently in development. Manual transaction entry is available.');
+      const userId = parseInt(await AsyncStorage.getItem('userId'));
       
-      // This would integrate with actual SMS reading
-      // For now, just update sync time
+      // Read SMS messages
+      const messages = await readSMSMessages(500); // Read last 500 messages
+      
+      if (messages.length === 0) {
+        Alert.alert('No Messages', 'No SMS messages found to sync.');
+        setSyncing(false);
+        return;
+      }
+
+      // Process SMS messages
+      const processed = await processSMSMessages(userId, messages);
+
       await AsyncStorage.setItem('lastSmsSync', new Date().toISOString());
       setLastSyncTime(new Date());
+
+      // Update user balance based on new transactions
+      if (processed.length > 0) {
+        const userEmail = await AsyncStorage.getItem('userEmail');
+        const user = await getUserByEmail(userEmail);
+        
+        let balanceChange = 0;
+        processed.forEach(txn => {
+          if (txn.type === 'income') {
+            balanceChange += txn.amount;
+          } else if (txn.type === 'expense') {
+            balanceChange -= txn.amount;
+          }
+        });
+        
+        await updateUserBalance(userId, user.current_balance + balanceChange);
+      }
+
+      // Reload data
+      await loadData();
+
+      if (processed.length > 0) {
+        Alert.alert(
+          'Sync Complete',
+          `Successfully synced ${processed.length} transaction(s) from your messages!`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Sync Complete',
+          'No new financial transactions found in your messages.',
+          [{ text: 'OK' }]
+        );
+      }
     } catch (error) {
       console.error('Error syncing SMS:', error);
-      Alert.alert('Error', 'Failed to sync SMS messages');
+      Alert.alert('Error', 'Failed to sync SMS messages: ' + error.message);
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -106,9 +166,19 @@ export default function SMSScreen({ navigation }) {
             {lastSyncTime ? lastSyncTime.toLocaleString() : 'Never'}
           </Text>
         </View>
-        <TouchableOpacity style={styles.syncButton} onPress={syncSMS}>
-          <Text style={styles.syncIcon}>🔄</Text>
-          <Text style={styles.syncButtonText}>Sync SMS</Text>
+        <TouchableOpacity 
+          style={[styles.syncButton, syncing && styles.syncButtonDisabled]} 
+          onPress={syncSMS}
+          disabled={syncing}
+        >
+          {syncing ? (
+            <ActivityIndicator color={colors.text} size="small" />
+          ) : (
+            <>
+              <Text style={styles.syncIcon}>🔄</Text>
+              <Text style={styles.syncButtonText}>Sync SMS</Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -225,6 +295,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.md,
     gap: spacing.xs,
+  },
+  syncButtonDisabled: {
+    opacity: 0.6,
   },
   syncIcon: {
     fontSize: 20,

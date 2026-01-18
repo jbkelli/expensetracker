@@ -87,9 +87,12 @@ export const initDatabase = async () => {
     `);
 
     console.log('Database tables initialized successfully');
+    return true;
   } catch (error) {
     console.error('Database initialization error:', error);
-    throw error;
+    // Log the error but don't throw - allow app to continue
+    // Individual screens will handle database errors
+    return false;
   }
 };
 
@@ -110,6 +113,33 @@ export const getUserByEmail = async (email) => {
     [email]
   );
   return user;
+};
+
+export const getUserById = async (userId) => {
+  const database = await getDb();
+  const user = await database.getFirstAsync(
+    'SELECT id, name AS username, email, current_balance FROM users WHERE id = ?',
+    [userId]
+  );
+  return user;
+};
+
+export const updateUserPassword = async (userId, newPassword) => {
+  const database = await getDb();
+  await database.runAsync(
+    'UPDATE users SET password = ? WHERE id = ?',
+    [newPassword, userId]
+  );
+};
+
+export const deleteUser = async (userId) => {
+  const database = await getDb();
+  // Delete all user data
+  await database.runAsync('DELETE FROM transactions WHERE user_id = ?', [userId]);
+  await database.runAsync('DELETE FROM categories WHERE user_id = ?', [userId]);
+  await database.runAsync('DELETE FROM budgets WHERE user_id = ?', [userId]);
+  await database.runAsync('DELETE FROM processed_sms WHERE user_id = ?', [userId]);
+  await database.runAsync('DELETE FROM users WHERE id = ?', [userId]);
 };
 
 export const updateUserBalance = async (userId, newBalance) => {
@@ -145,13 +175,16 @@ export const initDefaultCategories = async (userId) => {
   const defaultCategories = [
     // Expense categories
     { name: 'Food & Dining', type: 'expense', icon: '🍔', color: '#FF5252' },
-    { name: 'Transport', type: 'expense', icon: '🚗', color: '#FF6E40' },
+    { name: 'Transportation', type: 'expense', icon: '🚗', color: '#FF6E40' },
     { name: 'Shopping', type: 'expense', icon: '🛍️', color: '#FF4081' },
     { name: 'Entertainment', type: 'expense', icon: '🎬', color: '#E040FB' },
     { name: 'Bills & Utilities', type: 'expense', icon: '📱', color: '#7C4DFF' },
-    { name: 'Healthcare', type: 'expense', icon: '⚕️', color: '#536DFE' },
+    { name: 'Health & Fitness', type: 'expense', icon: '⚕️', color: '#536DFE' },
+    { name: 'Airtime & Data', type: 'expense', icon: '📞', color: '#00BCD4' },
+    { name: 'Bank Charges', type: 'expense', icon: '🏦', color: '#607D8B' },
+    { name: 'Transfer', type: 'expense', icon: '💸', color: '#9E9E9E' },
     { name: 'Education', type: 'expense', icon: '📚', color: '#448AFF' },
-    { name: 'Other Expenses', type: 'expense', icon: '💸', color: '#FF5252' },
+    { name: 'Other Expenses', type: 'expense', icon: '📦', color: '#FF5252' },
     
     // Income categories
     { name: 'Salary', type: 'income', icon: '💰', color: '#4CAF50' },
@@ -203,6 +236,11 @@ export const updateTransactionCategory = async (transactionId, categoryId) => {
     'UPDATE transactions SET category_id = ?, needs_categorization = 0 WHERE id = ?',
     [categoryId, transactionId]
   );
+};
+
+export const deleteTransaction = async (transactionId) => {
+  const database = await getDb();
+  await database.runAsync('DELETE FROM transactions WHERE id = ?', [transactionId]);
 };
 
 export const getTransactionsByDateRange = async (userId, startDate, endDate) => {

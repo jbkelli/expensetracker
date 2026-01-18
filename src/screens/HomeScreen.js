@@ -9,6 +9,7 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors, spacing, borderRadius, fontSize } from '../theme';
 import { getUserByEmail, getTransactions, updateUserBalance } from '../database';
 import { LineChart } from 'react-native-chart-kit';
@@ -25,6 +26,26 @@ export default function HomeScreen({ navigation }) {
     balance: 0,
   });
   const [refreshing, setRefreshing] = useState(false);
+
+  // Set header with profile icon
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Profile')}
+          style={{ marginRight: 16 }}
+        >
+          <Text style={{ fontSize: 24 }}>👤</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   const loadData = useCallback(async () => {
     try {
